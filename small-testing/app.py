@@ -1,6 +1,7 @@
 from h2o_wave import ui, app, Q, main, data
 import pandas as pd
 import numpy as np
+import time
 
 
 @app('/')
@@ -9,7 +10,8 @@ async def serve(q: Q):
     # show_another_website(q)
     # plot_card(q)
     # plotting_data(q)
-    missing_value_plots(q)
+    # missing_value_plots(q)
+    await small_stat_card(q)
     await q.page.save()
 
 
@@ -96,3 +98,31 @@ def missing_value_plots(q: Q):
         box='1 1 5 -1',
         items=[plot1, plot2]
     )
+
+
+async def small_stat_card(q):
+    cat = 'dog'
+    val = 1
+    pc = 0.1
+
+    c = q.page.add(f'example', ui.small_series_stat_card(
+        box='1 1 1 1',
+        title='Verticoin',
+        value='=${{intl qux minimum_fraction_digits=2 maximum_fraction_digits=2}}',
+        data=dict(qux=val, quux=pc),
+        plot_category='foo',
+        plot_type='interval',
+        plot_value='qux',
+        plot_color='$red',
+        plot_data=data('foo qux', -20),
+        plot_zero_value=0,
+    ))
+    await q.page.save()
+
+    while val < 1000:
+        time.sleep(1)
+        cat, val, pc = cat, val + np.random.randint(0, 10), np.random.rand()
+        c.data.qux = val
+        c.data.quux = pc
+        c.plot_data[-1] = [cat, val]
+        await q.page.save()
